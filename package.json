@@ -1,0 +1,45 @@
+{
+  "name": "gnt-vocab",
+  "description": "Vocabulary generator for the Greek New Testament",
+  "tags": [
+    "computational-linguistics",
+    "bible",
+    "greek",
+    "new-testament"
+  ],
+  "version": "0.0.1",
+  "author": "jlipps@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jlipps/gnt-vocab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jlipps/gnt-vocab/issues"
+  },
+  "engines": [
+    "node"
+  ],
+  "main": "./server.js",
+  "dependencies": {
+    "underscore": "~1.4.3",
+    "express": "~3.0.6",
+    "argparse": "~0.1.10",
+    "path": "~0.4.9",
+    "rimraf": "~2.1.1",
+    "temp": "~0.5.0",
+    "request": "~2.12.0",
+    "underscore.string": "~2.3.1",
+    "glob": "~3.1.20",
+    "ncp": "~0.4.2",
+    "async": "~0.2.6"
+  },
+  "scripts": {
+    "test": "grunt lint"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.0",
+    "grunt-cli": "~0.1.6",
+    "grunt-contrib-jshint": "~0.1.1"
+  }
+}
+
