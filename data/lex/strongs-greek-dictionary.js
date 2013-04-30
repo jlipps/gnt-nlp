@@ -5,7 +5,7 @@
  *                                   by
  *                      James Strong, S.T.D., LL.D.
  *                                  1890
- * 
+ *
  * JSON version
  * ============
  * Copyright 2009, Open Scriptures. CC-BY-SA. Derived from XML.
@@ -13,22 +13,22 @@
  *
  * XML e-text version
  * ==================
- * 
+ *
  * The XML version of this work was prepared in 2006 by Ulrik Petersen
  * (http://ulrikp.org) from the ASCII e-text version presented below.
  * The XML version contains "real" UTF-8 Greek where the original ASCII
  * e-text version had transliteration.  The XML has a stand-alone DTD
  * which should be easy to follow.
- * 
+ *
  * Ulrik Petersen welcomes bugfixes to the text.  Please send them to the
  * address provided on the website:
- * 
+ *
  * http://ulrikp.org
- * 
+ *
  * Ulrik Petersen
  */
 
-var strongsGreekDictionary = {"G3143":{"derivation":"middle voice from G3144 (μαρτύρομαι);","lemma":"μαρτύρομαι","kjv_def":"take to record, testify","strongs_def":" to be adduced as a witness, i.e. (figuratively) to obtest (in affirmation or exhortation)"},
+module.exports = {"G3143":{"derivation":"middle voice from G3144 (μαρτύρομαι);","lemma":"μαρτύρομαι","kjv_def":"take to record, testify","strongs_def":" to be adduced as a witness, i.e. (figuratively) to obtest (in affirmation or exhortation)"},
 "G4190":{"derivation":"from a derivative of G4192 (πονηρός);","lemma":"πονηρός","kjv_def":"bad, evil, grievous, harm, lewd, malicious, wicked(-ness)","strongs_def":" hurtful, i.e. evil (properly, in effect or influence, and thus differing from G2556 (πονηρός), which refers rather to essential character, as well as from G4550 (πονηρός), which indicates degeneracy from original virtue); figuratively, calamitous; also (passively) ill, i.e. diseased; but especially (morally) culpable, i.e. derelict, vicious, facinorous; neuter (singular) mischief, malice, or (plural) guilt; masculine (singular) the devil, or (plural) sinners"},
 "G5234":{"derivation":"adverb from present participle active of G5235 (ὑπερβαλλόντως);","lemma":"ὑπερβαλλόντως","kjv_def":"beyond measure","strongs_def":" excessively"},
 "G260":{"derivation":"a primary particle;","lemma":"ἅμα","kjv_def":"also, and, together, with(-al)","strongs_def":" properly, at the \"same\" time, but freely used as a preposition or adverb denoting close association"},
