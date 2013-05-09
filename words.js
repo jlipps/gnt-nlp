@@ -5,7 +5,14 @@ var _ = require('underscore')
   , path = require('path')
   , books = require('./books');
 
-var words = {};
+var words = {
+    corpusWords: null,
+    corpusFreqWords: null,
+    corpusSortedFreqs: null,
+    bookWords: {},
+    bookFreqWords: {},
+    bookSortedFreqs: {}
+};
 
 words.wordsForBook = function(book, cb) {
   if (!_.contains(books.bookAbbrevList, book)) {
@@ -15,40 +22,115 @@ words.wordsForBook = function(book, cb) {
                       "abbreviation");
     }
   }
-  var tspPath = path.resolve(__dirname, "data", "text", book + ".TSP");
-  words.parseTspFile(tspPath, function(err, wordList) {
-    if (err) return cb(err);
-    cb(null, wordList);
-  });
+  if (typeof words.bookWords[book] === "undefined") {
+    var tspPath = path.resolve(__dirname, "data", "text", book + ".TSP");
+    words.parseTspFile(tspPath, function(err, wordList) {
+      if (err) return cb(err);
+      words.bookWords[book] = wordList;
+      cb(null, wordList);
+    });
+  } else {
+    cb(null, words.bookWords[book]);
+  }
 };
 
 words.wordFreqsForBook = function(book, cb) {
-  words.wordsForBook(book, function(err, wordList) {
-    if (err) return cb(err);
-    var freqMap = {};
-    _.each(wordList, function(word) {
-      if (_.has(freqMap, word)) {
-        freqMap[word]++;
-      } else {
-        freqMap[word] = 1;
-      }
+  if (typeof words.bookFreqWords[book] === "undefined") {
+    words.wordsForBook(book, function(err, wordList) {
+      if (err) return cb(err);
+      var freqs = words.wordListToFreqMap(wordList);
+      words.bookFreqWords[book] = freqs;
+      cb(null, freqs);
     });
-    cb(null, freqMap);
+  } else {
+    cb(null, words.bookFreqWords[book]);
+  }
+};
+
+words.wordsForCorpus = function(cb) {
+  if (words.corpusWords) {
+    cb(null, words.corpusWords);
+  } else {
+    var corpusWords = [];
+    var allBooks = _.clone(books.bookAbbrevList);
+    var alreadyReturned = false;
+    var getWordsForNextBook = function() {
+      var nextBook = allBooks.shift();
+      if (typeof nextBook !== "undefined") {
+        words.wordsForBook(nextBook, function(err, wordList) {
+          if (err && !alreadyReturned) {
+            alreadyReturned = true;
+            return cb(err);
+          } else if (!err) {
+            corpusWords = corpusWords.concat(wordList);
+            getWordsForNextBook();
+          }
+        });
+      } else {
+        cb(null, corpusWords);
+      }
+    };
+    getWordsForNextBook();
+  }
+};
+
+words.wordFreqsForCorpus = function(cb) {
+  if (words.corpusFreqWords === null) {
+    words.wordsForCorpus(function(err, wordList) {
+      if (err) return cb(err);
+      words.corpusFreqWords = words.wordListToFreqMap(wordList);
+      cb(null, words.corpusFreqWords);
+    });
+  } else {
+    cb(null, words.corpusFreqWords);
+  }
+};
+
+words.wordListToFreqMap = function(wordList) {
+  var freqMap = {};
+  _.each(wordList, function(word) {
+    if (_.has(freqMap, word)) {
+      freqMap[word]++;
+    } else {
+      freqMap[word] = 1;
+    }
   });
+  return freqMap;
 };
 
 words.sortedWordFreqsForBook = function(book, cb) {
-  words.wordFreqsForBook(book, function(err, freqMap) {
-    if (err) return cb(err);
-    var cmp = function(freqObj) {
-      return freqObj.freq * -1;
-    };
-    var freqArray = [];
-    _.each(freqMap, function(freq, word) {
-      freqArray.push({word: word, freq: freq});
+  if (typeof words.bookSortedFreqs[book] === "undefined") {
+    words.wordFreqsForBook(book, function(err, freqMap) {
+      if (err) return cb(err);
+      words.bookSortedFreqs[book] = words.sortWordFreqs(freqMap);
+      cb(null, words.bookSortedFreqs[book]);
     });
-    cb(null, _.sortBy(freqArray, cmp));
+  } else {
+    cb(null, words.bookSortedFreqs[book]);
+  }
+};
+
+words.sortWordFreqs = function(freqMap) {
+  var cmp = function(freqObj) {
+    return freqObj.freq * -1;
+  };
+  var freqArray = [];
+  _.each(freqMap, function(freq, word) {
+    freqArray.push({word: word, freq: freq});
   });
+  return _.sortBy(freqArray, cmp);
+};
+
+words.sortedWordFreqsForCorpus = function(cb) {
+  if (words.corpusSortedFreqs === null) {
+    words.wordFreqsForCorpus(function(err, freqMap) {
+      if (err) return cb(err);
+      words.corpusSortedFreqs = words.sortWordFreqs(freqMap);
+      cb(null, words.corpusSortedFreqs);
+    });
+  } else {
+    cb(null, words.corpusSortedFreqs);
+  }
 };
 
 words.parseTspFile = function(filename, cb) {
