@@ -4,7 +4,8 @@ var _ = require('underscore')
   , lex = require('./lexicon')
   , words = require('./words');
 
-var wordsByFreq = function(params, cb) {
+exports.wordsByFreq = function(params, cb) {
+  console.log(params);
   var limit = params.limit;
   var from = params.from;
   var minFreq = params.minFreq;
@@ -47,10 +48,10 @@ var wordsByFreq = function(params, cb) {
       var minCFSet = typeof minCorpusFreq === "number";
       var maxCFSet = typeof maxCorpusFreq === "number";
       if (typeof minFreq === "number" && freqs[i].freq < minFreq) {
-        break;
+        continue;
       }
       if (typeof maxFreq === "number" && freqs[i].freq > maxFreq) {
-        break;
+        continue;
       }
       if (hasCorpusFreq && minCFSet && freqs[i].corpusFreq < minCorpusFreq) {
         continue;
@@ -64,7 +65,7 @@ var wordsByFreq = function(params, cb) {
   });
 };
 
-var wordFreqsData = function(wordFreqs) {
+exports.wordFreqsData = function(wordFreqs) {
   var data = {lemmas: wordFreqs.length};
   var maxFreq = 0;
   var minFreq = 50000;
@@ -95,27 +96,35 @@ var wordFreqsData = function(wordFreqs) {
   return data;
 };
 
-var wordFreqsToCSV = function(wordFreqs) {
+exports.wordFreqsToCSV = function(wordFreqs) {
   var csvOut = "front,back\n";
   _.each(wordFreqs, function(wordFreq) {
     var def = wordFreq.strongs_def || wordFreq.kjv_def || wordFreq.derivation || "(none)";
-    csvOut += wordFreq.lemma.trim() + "," + def.replace(",", "\\,").trim() + "\n";
+    csvOut += wordFreq.lemma.trim() + ",\"" + def.replace(/"/g, '\"').trim() + "\"\n";
   });
   return csvOut;
 };
 
 if (require.main === module) {
-  wordsByFreq({book: 'RO', minFreq: 3, maxCorpusFreq: 50}, function(err, wordFreqs) {
-    console.log(wordFreqs);
-    console.log(wordFreqsData(wordFreqs));
-    //console.log(wordFreqsToCSV(wordFreqs));
+
+
+  exports.wordsByFreq({minFreq: 51}, function(err, wordFreqs) {
+    //console.log(wordFreqs);
+    //console.log(exports.wordFreqsData(wordFreqs));
+    var gnt50 = exports.wordFreqsToCSV(wordFreqs);
+    fs.writeFileSync(path.resolve(mainDir, "gnt-50.csv"), gnt50);
+    //exports.wordsByFreq({maxCorpusFreq: 50, minFreq: 5}, function(err, bookWordFreqs) {
+    //});
   });
   //var limit = 100;
-  //for (var i = 0; i < 10; i++) {
+  //for (var i = 0; i < 5; i++) {
     //var from = limit * i;
     //var params = {limit: limit, from: from};
-    //wordsByFreq('RO', params, function(err, wordFreqs) {
-      //console.log(wordFreqsData(wordFreqs));
+    //exports.wordsByFreq(params, function(err, wordFreqs) {
+      //console.log(exports.wordFreqsData(wordFreqs));
+      //if (i === 4) {
+        //console.log(wordFreqs);
+      //}
     //});
   //}
 }
