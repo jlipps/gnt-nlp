@@ -7,11 +7,8 @@ var fs = require('fs')
   , async = require('async')
   , books = require('./books');
 
-if (require.main === module) {
-  var mainDir = path.resolve("/Users/jlipps/Desktop/gnt-vocab");
+exports.makeLexicon = function(mainDir, corpusThresh, bookThresh, onlyBook) {
   var writeFns = [];
-  var corpusThresh = 30;
-  var bookThresh = 4;
   writeFns.push(function(cb) {
     console.log("Compiling GNT-50");
     vocab.wordsByFreq({minFreq: corpusThresh}, function(err, wordFreqs) {
@@ -22,26 +19,22 @@ if (require.main === module) {
     });
   });
   _.each(books.bookAbbrevList, function(book) {
-    writeFns.push(function(cb) {
-      console.log("Compiling " + book + "-5");
-      vocab.wordsByFreq({maxCorpusFreq: corpusThresh - 1, minFreq: bookThresh, book: book}, function(err, wf) {
-        if (err) return cb(err);
-        var csv = vocab.wordFreqsToCSV(wf);
-        fs.writeFileSync(path.resolve(mainDir, book + "-"+bookThresh+".csv"), csv);
-        cb();
+    if (!onlyBook || onlyBook === book) {
+      _.each([{minFreq: bookThresh, ending: bookThresh},
+              {maxFreq: bookThresh - 1, ending: 'rest'}], function(setting) {
+        writeFns.push(function(cb) {
+          var params = {maxCorpusFreq: corpusThresh - 1, minFreq: bookThresh, book: book};
+          _.extend(params, setting);
+          console.log("Compiling " + book + "-" + setting.ending);
+          vocab.wordsByFreq(params, function(err, wf) {
+            if (err) return cb(err);
+            var csv = vocab.wordFreqsToCSV(wf);
+            fs.writeFileSync(path.resolve(mainDir, book + "-"+setting.ending+".csv"), csv);
+            cb();
+          });
+        });
       });
-    });
-  });
-  _.each(books.bookAbbrevList, function(book) {
-    writeFns.push(function(cb) {
-      console.log("Compiling " + book + "-rest");
-      vocab.wordsByFreq({maxCorpusFreq: corpusThresh - 1, maxFreq: bookThresh - 1, book: book}, function(err, wf) {
-        if (err) return cb(err);
-        var csv = vocab.wordFreqsToCSV(wf);
-        fs.writeFileSync(path.resolve(mainDir, book + "-rest.csv"), csv);
-        cb();
-      });
-    });
+    }
   });
   async.series(writeFns, function(err) {
     if (err) {
@@ -51,4 +44,11 @@ if (require.main === module) {
       console.log("done");
     }
   });
+};
+
+if (require.main === module) {
+  var mainDir = path.resolve("/Users/jlipps/Desktop/gnt-vocab");
+  var corpusThresh = 30;
+  var bookThresh = 4;
+  exports.makeLexicon(mainDir, corpusThresh, bookThresh);
 }
