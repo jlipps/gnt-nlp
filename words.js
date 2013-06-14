@@ -149,6 +149,7 @@ words.parseTspFile = function(filename, cb) {
     if (err) return cb(err);
     data = data.toString('utf8');
     var wordList = [];
+    var translitList = [];
     var posMap = {};
     var wordsData = data.split("\n");
     _.each(wordsData, function(datum) {
@@ -156,7 +157,9 @@ words.parseTspFile = function(filename, cb) {
         var wordData = datum.split(" ");
         var word = wordData[6];
         var pos = wordData[5];
+        var translit = wordData[3];
         if (/^\d+$/.test(word)) {
+          translitList.push(translit);
           wordList.push(parseInt(word, 10));
           if (!_.has(posMap, word)) {
             posMap[word] = {};
@@ -171,7 +174,7 @@ words.parseTspFile = function(filename, cb) {
         }
       }
     });
-    cb(null, wordList, posMap);
+    cb(null, wordList, posMap, translitList);
   });
 };
 

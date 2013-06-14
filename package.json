@@ -31,7 +31,9 @@
     "underscore.string": "~2.3.1",
     "glob": "~3.1.20",
     "ncp": "~0.4.2",
-    "async": "~0.2.6"
+    "async": "~0.2.6",
+    "jade": "~0.31.2",
+    "stylus": "~0.32.1"
   },
   "scripts": {
     "test": "grunt lint"
