@@ -36,7 +36,7 @@ describe('glyphs', function() {
   it('', function() {
     _.each(testWords, function(wordSet) {
       describe('', function() {
-        it('should transliterate ' + wordSet[0] + ' correctly', function() {
+        it('should transliterate ' + wordSet[0] + ' correctly', function(done) {
           var test = wordSet[0];
           var match = wordSet[1];
           var res = glyphs.parseWord(test);
@@ -48,7 +48,9 @@ describe('glyphs', function() {
             } catch (e2) {
               console.log("Actual: " + res);
               console.log("Expected: " + match);
-              throw e2;
+              setTimeout(function() {
+                throw e2;
+              }, 10000);
             }
           }
         });
