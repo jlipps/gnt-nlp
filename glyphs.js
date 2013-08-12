@@ -1,7 +1,6 @@
 "use strict";
 
-var words = require('./words')
-  , _ = require('underscore');
+var _ = require('underscore');
 
 var glyphs = {};
 var states = {
@@ -16,24 +15,33 @@ var states = {
 };
 var diacriticOrder = ['rough', 'smooth', 'acute', 'grave', 'circumflex',
     'umlaut', 'iota'];
-var stateOrder = ['upper', 'lower', 'final', 'none'] + diacriticOrder;
+var stateOrder = ['upper', 'lower', 'final', 'none'].concat(diacriticOrder);
 
 var noDiacritics = ['B', 'G', 'D', 'F', 'K', 'L', 'M', 'N', 'P', 'C', 'S', 'T',
     'Y', 'Q', 'X', 'Z'];
 
-var vowels = ['A', 'E', 'H', 'I', 'O', 'U', 'W'];
-var takesBreathing = vowels + ['R'];
+//var vowels = ['A', 'E', 'H', 'I', 'O', 'U', 'W'];
+//var takesBreathing = vowels + ['R'];
+
+var debug = function(msg) {
+  //console.log(msg);
+};
 
 glyphs.parseWord = function(translit) {
   var glyphSet = [];
-  var curGlyph = [null, translit.split("")];
-  do {
-    console.log("Getting next glyph from " + curGlyph[1]);
-    curGlyph = glyphs.getNextGlyph(curGlyph[1]);
-    if (curGlyph[0] !== null) {
-      glyphSet.push(curGlyph[0]);
+  var curGlyph = glyphs.getNextGlyph(translit.split(""));
+  while(curGlyph[0] !== null) {
+    debug("curGlyph is " + JSON.stringify(curGlyph));
+    if (curGlyph[0] === null) {
+      debug("it's null!");
+    } else {
+      debug(typeof curGlyph);
+      debug("It's not null, it's " + JSON.stringify(curGlyph[0]));
     }
-  } while (curGlyph[0] !== null);
+    glyphSet.push(curGlyph[0]);
+    debug("Getting next glyph from " + curGlyph[1]);
+    curGlyph = glyphs.getNextGlyph(curGlyph[1]);
+  }
   return glyphSet.join("");
 };
 
@@ -45,15 +53,16 @@ glyphs.getNextGlyph = function(chars) {
     var res, validGlyph, unknown, returnLast, isLast, char;
     while (!haveGlyph) {
       char = chars.shift();
+      debug("Chars is now: " + JSON.stringify(chars));
       isLast = chars.length === 0;
       state.push(char);
-      console.log("Looking for glyph with " + JSON.stringify(state));
+      debug("Looking for glyph with " + JSON.stringify(state));
       res = glyphs.getGlyphFromState(state, isLast);
-      console.log("Res is " + JSON.stringify(res));
+      debug("Res is " + JSON.stringify(res));
       validGlyph = res[0];
       unknown = res[1];
       returnLast = res[2];
-      glyph = res[4];
+      glyph = res[3];
       if (returnLast) {
         chars.unshift(returnLast);
       }
@@ -63,7 +72,7 @@ glyphs.getNextGlyph = function(chars) {
     }
     return [glyph, chars];
   } else {
-    console.log("Char list is empty");
+    debug("Char list is empty");
     return [null];
   }
 };
@@ -87,15 +96,16 @@ glyphs.getGlyphFromState = function(state, isLast) {
     if (_.contains(noDiacritics, last)) {
       returnLast = state.pop();
       validGlyph = true;
-    } else if (!_.has(states, last) && _.has(states, secondToLast)) {
-      returnLast = state.pop();
-      validGlyph = true;
-    } else if (!_.has(states, last) && !_.has(states, secondToLast)) {
+    } else if (!_.has(states, last)) {
+      debug("last isn't in states and secondtolast is");
       returnLast = state.pop();
       validGlyph = true;
     }
   }
-  if (validGlyph || isLast) {
+  if (isLast) {
+    validGlyph = true;
+  }
+  if (validGlyph) {
     if (isLast && state[0] === "S") {
       state.unshift("final");
     }
@@ -108,23 +118,24 @@ glyphs.getGlyphFromState = function(state, isLast) {
     if (state.length === 2) {
       state.unshift('none');
     }
-    console.log(state);
+    debug(state);
     state = glyphs.mapStates(state);
     state = glyphs.sortByDiacriticOrder(state);
+    debug(state);
     var glyphString = "glyphs";
+    glyph = glyphs.glyphs;
     _.each(state, function(stateEl) {
       try {
         glyphString += "[" + stateEl + "]";
-        glyph = glyphs.glyphs[stateEl];
+        glyph = glyph[stateEl];
       } catch (e) {
         console.log("Could not find a glyph for state: " + glyphString);
         throw e;
       }
     });
-    return [true, false, null, glyph];
-  } else {
-    return [validGlyph, unknown, returnLast, null];
+    debug(glyphString);
   }
+  return [validGlyph, unknown, returnLast, glyph];
 };
 
 glyphs.mapStates = function(state) {

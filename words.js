@@ -10,24 +10,27 @@ var words = {
     corpusFreqWords: null,
     corpusSortedFreqs: null,
     corpusPosMap: null,
+    corpusTranslit: null,
     bookWords: {},
     bookPos: {},
     bookFreqWords: {},
-    bookSortedFreqs: {}
+    bookSortedFreqs: {},
+    bookTranslit: {}
 };
 
 words.wordsForBook = function(book, cb) {
   book = words.ensureBook(book);
   if (typeof words.bookWords[book] === "undefined") {
     var tspPath = path.resolve(__dirname, "data", "text", book + ".TSP");
-    words.parseTspFile(tspPath, function(err, wordList, posMap) {
+    words.parseTspFile(tspPath, function(err, wordList, posMap, translitList) {
       if (err) return cb(err);
       words.bookWords[book] = wordList;
       words.bookPos[book] = posMap;
-      cb(null, wordList, posMap);
+      words.bookTranslit[book] = translitList;
+      cb(null, wordList, posMap, translitList);
     });
   } else {
-    cb(null, words.bookWords[book], words.bookPos[book]);
+    cb(null, words.bookWords[book], words.bookPos[book], words.bookTranslit[book]);
   }
 };
 
@@ -46,21 +49,31 @@ words.wordFreqsForBook = function(book, cb) {
 
 words.wordsForCorpus = function(cb) {
   if (words.corpusWords) {
-    cb(null, words.corpusWords);
+    cb(null, words.corpusWords, words.corpusPosMap, words.corpusTranslit);
   } else {
     var corpusWords = [];
     var corpusPosMap = {};
+    var corpusTranslit = {};
     var allBooks = _.clone(books.bookAbbrevList);
     var alreadyReturned = false;
     var getWordsForNextBook = function() {
       var nextBook = allBooks.shift();
       if (typeof nextBook !== "undefined") {
-        words.wordsForBook(nextBook, function(err, wordList, posMap) {
+        words.wordsForBook(nextBook, function(err, wordList, posMap, translitList) {
           if (err && !alreadyReturned) {
             alreadyReturned = true;
             return cb(err);
           } else if (!err) {
             corpusWords = corpusWords.concat(wordList);
+            _.each(translitList, function(data, word) {
+              if (!_.has(corpusTranslit, word)) {
+                corpusTranslit[word] = {
+                  lemma: data.lemma,
+                  occurrences: []
+                };
+              }
+              corpusTranslit[word].occurrences = corpusTranslit[word].occurrences.concat(data.occurrences);
+            });
             _.each(posMap, function(poss, word) {
               if (!_.has(corpusPosMap, word)) {
                 corpusPosMap[word] = {};
@@ -77,7 +90,10 @@ words.wordsForCorpus = function(cb) {
           }
         });
       } else {
-        cb(null, corpusWords, corpusPosMap);
+        words.corpusWords = corpusWords;
+        words.corpusPosMap = corpusPosMap;
+        words.corpusTranslit = corpusTranslit;
+        cb(null, corpusWords, corpusPosMap, corpusTranslit);
       }
     };
     getWordsForNextBook();
@@ -149,7 +165,7 @@ words.parseTspFile = function(filename, cb) {
     if (err) return cb(err);
     data = data.toString('utf8');
     var wordList = [];
-    var translitList = [];
+    var translitList = {};
     var posMap = {};
     var wordsData = data.split("\n");
     _.each(wordsData, function(datum) {
@@ -158,9 +174,15 @@ words.parseTspFile = function(filename, cb) {
         var word = wordData[6];
         var pos = wordData[5];
         var translit = wordData[3];
+        var translitLemma = wordData[9];
         if (/^\d+$/.test(word)) {
-          translitList.push(translit);
           wordList.push(parseInt(word, 10));
+          if (!_.has(translitList, word)) {
+            translitList[word] = {};
+            translitList[word].occurrences = [];
+            translitList[word].lemma = translitLemma;
+          }
+          translitList[word].occurrences.push(translit);
           if (!_.has(posMap, word)) {
             posMap[word] = {};
           }
