@@ -1,13 +1,16 @@
 {
-  "name": "gnt-vocab",
-  "description": "Vocabulary generator for the Greek New Testament",
+  "name": "gnt-nlp",
+  "description": "NLP (Natural Language Processing) Library for the Greek New Testament",
   "tags": [
     "computational-linguistics",
+    "NLP",
+    "natural-language-processing",
     "bible",
     "greek",
+    "ancient-greek",
     "new-testament"
   ],
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "jlipps@gmail.com",
   "repository": {
     "type": "git",
@@ -19,21 +22,16 @@
   "engines": [
     "node"
   ],
-  "main": "./server.js",
+  "main": "./lib/cli.js",
+  "directories": {
+    "lib": "./lib",
+    "test": "./test",
+    "doc": "./docs"
+  },
   "dependencies": {
     "underscore": "~1.4.3",
-    "express": "~3.0.6",
-    "argparse": "~0.1.10",
     "path": "~0.4.9",
-    "rimraf": "~2.1.1",
-    "temp": "~0.5.0",
-    "request": "~2.12.0",
-    "underscore.string": "~2.3.1",
-    "glob": "~3.1.20",
-    "ncp": "~0.4.2",
-    "async": "~0.2.6",
-    "jade": "~0.31.2",
-    "stylus": "~0.32.1"
+    "async": "~0.2.6"
   },
   "scripts": {
     "test": "grunt lint"
