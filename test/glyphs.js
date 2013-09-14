@@ -32,15 +32,23 @@ function getUnicodeChars(word) {
 
 var testMatch = function(res, match) {
   try {
-    res.should.eql(match);
-  } catch (e) {
     try {
-      getUnicodeChars(res).should.eql(getUnicodeChars(match));
-    } catch (e2) {
-      var e3 = new Error("Actual " + res + " (" +
-        JSON.stringify(getUnicodeChars(res)) + ") did not match expected " +
-        match + " (" + JSON.stringify(getUnicodeChars(match)) + ")");
-      throw e3;
+      res.should.eql(match);
+    } catch (e) {
+      try {
+        getUnicodeChars(res).should.eql(getUnicodeChars(match));
+      } catch (e2) {
+        var e3 = new Error("Actual " + res + " (" +
+          JSON.stringify(getUnicodeChars(res)) + ") did not match expected " +
+          match + " (" + JSON.stringify(getUnicodeChars(match)) + ")");
+        throw e3;
+      }
+    }
+  } catch (err) {
+    if (err.message.indexOf("did not match expected") !== -1) {
+      console.log([res, match]);
+    } else {
+      throw err;
     }
   }
 };
@@ -48,8 +56,8 @@ var testMatch = function(res, match) {
 describe('glyphs', function() {
   var testWords = getTestWords();
   it('onetest', function() {
-    var test = "*XRISTO/S";
-    var match = "Χριστός";
+    var test = "ZW|OGONE/W";
+    var match = "ζῳογονέω";
     var res = glyphs.parseWord(test);
     testMatch(res, match);
   });
