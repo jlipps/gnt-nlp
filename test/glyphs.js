@@ -1,7 +1,7 @@
 /* global describe:true, it:true, before:true */
 "use strict";
 
-var glyphs = require('../glyphs')
+var glyphs = require('../lib/glyphs')
   , getTestWords = require('./words')
   , _ = require('underscore')
   , should = require('should');
@@ -46,29 +46,19 @@ var testMatch = function(res, match) {
 };
 
 describe('glyphs', function() {
-  var testWords;
-  before(function(done) {
-    getTestWords(function(words) {
-      testWords = words;
-      done();
-    });
-  });
+  var testWords = getTestWords();
   it('onetest', function() {
     var test = "*XRISTO/S";
     var match = "Χριστός";
     var res = glyphs.parseWord(test);
     testMatch(res, match);
   });
-  it('', function() {
-    _.each(testWords, function(wordSet) {
-      describe('', function() {
-        it('should transliterate ' + wordSet[0] + ' correctly', function() {
-          var test = wordSet[0];
-          var match = wordSet[1];
-          var res = glyphs.parseWord(test);
-          testMatch(res, match);
-        });
-      });
+  _.each(testWords, function(wordSet) {
+    it('should transliterate ' + wordSet[0] + ' correctly', function() {
+      var test = wordSet[0];
+      var match = wordSet[1];
+      var res = glyphs.parseWord(test);
+      testMatch(res, match);
     });
   });
 });

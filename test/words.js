@@ -1,19 +1,19 @@
 "use strict";
 
-var words = require('../words')
+var words = require('../lib/words')
   , _ = require('underscore')
-  , lex = require('../lexicon');
+  , lex = require('../lib/lexicon');
 
-module.exports = function(cb) {
-  words.wordsForCorpus(function(err, a, b, translit) {
-    var testWords = [];
-    _.each(translit, function(data, word) {
-      var wordSet = [];
-      wordSet[0] = data.lemma;
-      wordSet[1] = lex.convertStrongsNumber(word).lemma;
-      testWords.push(wordSet);
-    });
-    cb(testWords);
+module.exports = function() {
+  var res = words.wordsForCorpus()
+    , translit = res[2];
+  var testWords = [];
+  _.each(translit, function(data, word) {
+    var wordSet = [];
+    wordSet[0] = data.lemma;
+    wordSet[1] = lex.convertStrongsNumber(word).lemma;
+    testWords.push(wordSet);
   });
+  return testWords;
 };
 
