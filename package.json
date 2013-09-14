@@ -22,7 +22,7 @@
   "engines": [
     "node"
   ],
-  "main": "./lib/cli.js",
+  "main": "./lib/main.js",
   "directories": {
     "lib": "./lib",
     "test": "./test",
