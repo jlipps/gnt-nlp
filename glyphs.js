@@ -3,16 +3,19 @@
 var _ = require('underscore');
 
 var glyphs = {};
-var states = {
+var beforeStates = {
   '*': 'capital'
-  , ')': 'smooth'
   , '(': 'rough'
-  , '/': 'acute'
+  , ')': 'smooth'
+  , '=': 'circumflex'
+};
+var afterStates = {
+  '/': 'acute'
   , '\\': 'grave'
   , '+': 'umlaut'
   , '|': 'iota'
-  , '=': 'circumflex'
 };
+var states = _.extend(beforeStates, afterStates);
 var diacriticOrder = ['rough', 'smooth', 'acute', 'grave', 'circumflex',
     'umlaut', 'iota'];
 var stateOrder = ['upper', 'lower', 'final', 'none'].concat(diacriticOrder);
@@ -52,8 +55,8 @@ glyphs.getNextGlyph = function(chars) {
     var glyph = null;
     var res, validGlyph, unknown, returnLast, isLast, char;
     while (!haveGlyph) {
-      char = chars.shift();
       debug("Chars is now: " + JSON.stringify(chars));
+      char = chars.shift();
       isLast = chars.length === 0;
       state.push(char);
       debug("Looking for glyph with " + JSON.stringify(state));
@@ -77,6 +80,16 @@ glyphs.getNextGlyph = function(chars) {
   }
 };
 
+glyphs.numBaseCharsInState = function(state) {
+  var num = 0;
+  _.each(state, function(char) {
+    if (!_.has(states, char)) {
+      num++;
+    }
+  });
+  return num;
+};
+
 // upper, lower, rough, acute, grave, umlaut, circumflex, iota, smooth, none
 
 glyphs.getGlyphFromState = function(state, isLast) {
@@ -93,11 +106,10 @@ glyphs.getGlyphFromState = function(state, isLast) {
   } else {
     var last = state[state.length - 1];
     var secondToLast = state[state.length - 2];
-    if (_.contains(noDiacritics, last)) {
-      returnLast = state.pop();
-      validGlyph = true;
-    } else if (!_.has(states, last)) {
-      debug("last isn't in states and secondtolast is");
+    if (states[secondToLast] !== 'capital' && _.contains(noDiacritics, last) ||
+        (_.has(afterStates, secondToLast) && !_.has(states, last)) ||
+        (glyphs.numBaseCharsInState(state) > 1)) {
+      debug("we've crossed glyph boundary");
       returnLast = state.pop();
       validGlyph = true;
     }
@@ -106,10 +118,11 @@ glyphs.getGlyphFromState = function(state, isLast) {
     validGlyph = true;
   }
   if (validGlyph) {
+    debug("at start of validGlyph: " + JSON.stringify(state));
     if (isLast && state[0] === "S") {
       state.unshift("final");
     }
-    if (state[0] === 'capital') {
+    if (states[state[0]] === 'capital') {
       state.shift();
       state.unshift('upper');
     } else {
