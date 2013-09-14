@@ -14,10 +14,10 @@
   "author": "jlipps@gmail.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jlipps/gnt-vocab.git"
+    "url": "https://github.com/jlipps/gnt-nlp.git"
   },
   "bugs": {
-    "url": "https://github.com/jlipps/gnt-vocab/issues"
+    "url": "https://github.com/jlipps/gnt-nlp/issues"
   },
   "engines": [
     "node"

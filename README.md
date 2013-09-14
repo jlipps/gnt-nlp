@@ -1,4 +1,4 @@
-gnt-vocab
+gnt-nlp
 =========
 
-Vocabulary list generator for the Greek New Testament
+Node.js-based Natural Language Processing toolkit for the Greek New Testament.
